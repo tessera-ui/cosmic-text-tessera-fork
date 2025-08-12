@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// A line (or paragraph) of text that is shaped and laid out
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct BufferLine {
     text: String,
     ending: LineEnding,
