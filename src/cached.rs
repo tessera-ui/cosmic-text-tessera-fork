@@ -9,6 +9,17 @@ pub enum Cached<T: Clone + Debug> {
     Used(T),
 }
 
+impl<T: Clone + Debug + PartialEq> PartialEq for Cached<T> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Empty, Self::Empty) => true,
+            (Self::Unused(a), Self::Unused(b)) => a == b,
+            (Self::Used(a), Self::Used(b)) => a == b,
+            _ => false,
+        }
+    }
+}
+
 impl<T: Clone + Debug> Cached<T> {
     /// Gets the value if in state `Self::Used`.
     pub const fn get(&self) -> Option<&T> {

@@ -10,7 +10,7 @@ use alloc::vec::Vec;
 use core_maths::CoreFloat;
 
 /// A laid out glyph
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct LayoutGlyph {
     /// Start index of cluster in original line
     pub start: usize,
@@ -92,7 +92,7 @@ impl LayoutGlyph {
 }
 
 /// A line of laid out glyphs
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct LayoutLine {
     /// Width of the line
     pub w: f32,
