@@ -12,7 +12,7 @@
 //! point, you can use the `SwashCache` to rasterize glyphs into either images or pixels.
 //!
 //! ```
-//! use cosmic_text::{Attrs, Color, FontSystem, SwashCache, Buffer, Metrics, Shaping};
+//! use cosmic_text_tessera_fork::{Attrs, Color, FontSystem, SwashCache, Buffer, Metrics, Shaping};
 //!
 //! // A FontSystem provides access to detected system fonts, create one per application
 //! let mut font_system = FontSystem::new();

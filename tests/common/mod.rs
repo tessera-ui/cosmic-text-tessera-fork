@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use cosmic_text::{
+use cosmic_text_tessera_fork::{
     fontdb::Database, Attrs, AttrsOwned, Buffer, Color, Family, FontSystem, Metrics, Shaping,
     SwashCache,
 };

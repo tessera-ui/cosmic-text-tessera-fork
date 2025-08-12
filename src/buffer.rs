@@ -704,7 +704,7 @@ impl Buffer {
     /// Set text of buffer, using an iterator of styled spans (pairs of text and attributes)
     ///
     /// ```
-    /// # use cosmic_text::{Attrs, Buffer, Family, FontSystem, Metrics, Shaping};
+    /// # use cosmic_text_tessera_fork::{Attrs, Buffer, Family, FontSystem, Metrics, Shaping};
     /// # let mut font_system = FontSystem::new();
     /// let mut buffer = Buffer::new_empty(Metrics::new(32.0, 44.0));
     /// let attrs = Attrs::new().family(Family::Serif);
@@ -1431,7 +1431,7 @@ impl BorrowedWithFontSystem<'_, Buffer> {
     /// Set text of buffer, using an iterator of styled spans (pairs of text and attributes)
     ///
     /// ```
-    /// # use cosmic_text::{Attrs, Buffer, Family, FontSystem, Metrics, Shaping};
+    /// # use cosmic_text_tessera_fork::{Attrs, Buffer, Family, FontSystem, Metrics, Shaping};
     /// # let mut font_system = FontSystem::new();
     /// let mut buffer = Buffer::new_empty(Metrics::new(32.0, 44.0));
     /// let attrs = Attrs::new().family(Family::Serif);
