@@ -861,7 +861,6 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
             Action::Scroll { pixels } => {
                 self.with_buffer_mut(|buffer| {
                     let mut scroll = buffer.scroll();
-                    //TODO: align to layout lines
                     scroll.vertical += pixels;
                     buffer.set_scroll(scroll);
                 });
