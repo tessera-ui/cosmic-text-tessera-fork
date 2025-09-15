@@ -246,10 +246,9 @@ impl<'buffer> Editor<'buffer> {
         let old_cursor = self.cursor();
 
         // 2. Set the buffer's content directly.
-        //    This assumes `buffer.set_text` handles parsing the string into lines
-        //    and forces a redraw.
         self.with_buffer_mut(|buffer| {
             buffer.set_text(font_system, text, attrs, Shaping::Advanced, None);
+            buffer.set_redraw(true);
         });
 
         // 3. Validate the old cursor position against the new buffer content
