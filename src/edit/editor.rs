@@ -228,6 +228,69 @@ impl<'buffer> Editor<'buffer> {
             }
         });
     }
+
+    /// A "reactive" way to set the editor's text content while attempting to
+    /// preserve the cursor position intelligently.
+    ///
+    /// - If the old cursor position is still valid in the new text, it is kept.
+    /// - If the cursor's line exists but is now shorter, the cursor moves to the end of that line.
+    /// - If the cursor's line no longer exists, the cursor moves to the end of the document.
+    /// - Any active selection is cleared.
+    pub fn set_text_reactive(
+        &mut self,
+        text: &str,
+        font_system: &mut FontSystem,
+        attrs: &Attrs<'_>,
+    ) {
+        // 1. Store the old cursor position before the buffer is mutated.
+        let old_cursor = self.cursor();
+
+        // 2. Set the buffer's content directly.
+        //    This assumes `buffer.set_text` handles parsing the string into lines
+        //    and forces a redraw.
+        self.with_buffer_mut(|buffer| {
+            buffer.set_text(font_system, text, attrs, Shaping::Advanced, None);
+        });
+
+        // 3. Validate the old cursor position against the new buffer content
+        //    to determine the new, corrected cursor position.
+        let new_cursor = self.with_buffer(|buffer| {
+            let new_num_lines = buffer.lines.len();
+
+            if old_cursor.line < new_num_lines {
+                // The cursor's original line still exists.
+                let line = &buffer.lines[old_cursor.line];
+                let new_line_len = line.text().len();
+
+                if old_cursor.index <= new_line_len {
+                    // The index is also valid, so we keep the original cursor position.
+                    old_cursor
+                } else {
+                    // The index is out of bounds (the line is shorter), so move the cursor
+                    // to the end of the current line.
+                    Cursor::new(old_cursor.line, new_line_len)
+                }
+            } else {
+                // The cursor's original line no longer exists, so move the cursor
+                // to the very end of the document.
+                let last_line_index = new_num_lines.saturating_sub(1);
+                let last_line_len = buffer
+                    .lines
+                    .get(last_line_index)
+                    .map_or(0, |l| l.text().len());
+                Cursor::new(last_line_index, last_line_len)
+            }
+        });
+
+        // 4. Apply the new, validated cursor position and reset related state.
+        self.set_cursor(new_cursor);
+        self.set_selection(Selection::None); // Clearing selection is the safest behavior for reactive updates.
+
+        // If the cursor moved to a different line, reset the horizontal tracking preference.
+        if new_cursor.line != old_cursor.line {
+            self.cursor_x_opt = None;
+        }
+    }
 }
 
 impl<'buffer> Edit<'buffer> for Editor<'buffer> {
