@@ -1,9 +1,12 @@
+#![allow(clippy::too_many_arguments)]
+
 #[cfg(not(feature = "std"))]
 use alloc::{string::String, vec::Vec};
 use core::mem;
 
 use crate::{
-    Align, Attrs, AttrsList, Cached, FontSystem, LayoutLine, LineEnding, ShapeLine, Shaping, Wrap,
+    Align, Attrs, AttrsList, Cached, Direction, Ellipsize, FontSystem, Hinting, LayoutLine,
+    LayoutRunIter, LineEnding, ShapeLine, Shaping, Wrap,
 };
 
 /// A line (or paragraph) of text that is shaped and laid out
@@ -159,6 +162,9 @@ impl BufferLine {
         let len = self.text.len();
         self.text.push_str(other.text());
 
+        // To preserve line endings, we use the one from the other line
+        self.ending = other.ending();
+
         if other.attrs_list.defaults() != self.attrs_list.defaults() {
             // If default formatting does not match, make a new span for it
             self.attrs_list
@@ -181,6 +187,8 @@ impl BufferLine {
         self.reset();
 
         let mut new = Self::new(text, self.ending, attrs_list, self.shaping);
+        // To preserve line endings, it moves to the new line
+        self.ending = LineEnding::None;
         new.align = self.align;
         new
     }
@@ -204,7 +212,12 @@ impl BufferLine {
 
     /// Shape line, will cache results
     #[allow(clippy::missing_panics_doc)]
-    pub fn shape(&mut self, font_system: &mut FontSystem, tab_width: u16) -> &ShapeLine {
+    pub fn shape(
+        &mut self,
+        font_system: &mut FontSystem,
+        tab_width: u16,
+        direction: Direction,
+    ) -> &ShapeLine {
         if self.shape_opt.is_unused() {
             let mut line = self
                 .shape_opt
@@ -216,6 +229,7 @@ impl BufferLine {
                 &self.attrs_list,
                 self.shaping,
                 tab_width,
+                direction,
             );
             self.shape_opt.set_used(line);
             self.layout_opt.set_unused();
@@ -228,6 +242,10 @@ impl BufferLine {
         self.shape_opt.get()
     }
 
+    pub const fn needs_reshaping(&self) -> bool {
+        self.shape_opt.is_invalidated() || self.layout_opt.is_invalidated()
+    }
+
     /// Layout line, will cache results
     #[allow(clippy::missing_panics_doc)]
     pub fn layout(
@@ -236,8 +254,11 @@ impl BufferLine {
         font_size: f32,
         width_opt: Option<f32>,
         wrap: Wrap,
+        ellipsize: Ellipsize,
         match_mono_width: Option<f32>,
         tab_width: u16,
+        hinting: Hinting,
+        direction: Direction,
     ) -> &[LayoutLine] {
         if self.layout_opt.is_unused() {
             let align = self.align;
@@ -245,15 +266,17 @@ impl BufferLine {
                 .layout_opt
                 .take_unused()
                 .unwrap_or_else(|| Vec::with_capacity(1));
-            let shape = self.shape(font_system, tab_width);
+            let shape = self.shape(font_system, tab_width, direction);
             shape.layout_to_buffer(
                 &mut font_system.shape_buffer,
                 font_size,
                 width_opt,
                 wrap,
+                ellipsize,
                 align,
                 &mut layout,
                 match_mono_width,
+                hinting,
             );
             self.layout_opt.set_used(layout);
         }
@@ -263,6 +286,11 @@ impl BufferLine {
     /// Get line layout cache
     pub const fn layout_opt(&self) -> Option<&Vec<LayoutLine>> {
         self.layout_opt.get()
+    }
+
+    /// Get the visible layout runs for rendering and other tasks
+    pub fn layout_runs(&self, height_opt: Option<f32>, line_height: f32) -> LayoutRunIter<'_> {
+        LayoutRunIter::from_lines(core::slice::from_ref(self), height_opt, line_height, 0.0, 0)
     }
 
     /// Get line metadata. This will be None if [`BufferLine::set_metadata`] has not been called
@@ -282,7 +310,7 @@ impl BufferLine {
     pub(crate) fn empty() -> Self {
         Self {
             text: String::default(),
-            ending: LineEnding::default(),
+            ending: LineEnding::None,
             attrs_list: AttrsList::new(&Attrs::new()),
             align: None,
             shape_opt: Cached::Empty,

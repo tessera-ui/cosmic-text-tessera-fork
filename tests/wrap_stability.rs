@@ -1,6 +1,6 @@
-use cosmic_text_tessera_fork::{
-    fontdb, Align, Attrs, AttrsList, BidiParagraphs, Buffer, Family, FontSystem, LayoutLine,
-    Metrics, ShapeLine, Shaping, Weight, Wrap,
+use cosmic_text::{
+    fontdb, Align, Attrs, AttrsList, BidiParagraphs, Buffer, Direction, Family, FontSystem,
+    Hinting, LayoutLine, Metrics, ShapeLine, Shaping, Weight, Wrap,
 };
 
 // Test for https://github.com/pop-os/cosmic-text/issues/134
@@ -21,16 +21,37 @@ fn stable_wrap() {
     font_system.db_mut().load_font_data(font);
 
     let mut check_wrap = |text: &_, wrap, align_opt, start_width_opt| {
-        let line = ShapeLine::new(&mut font_system, text, &attrs, Shaping::Advanced, 8);
+        let line = ShapeLine::new(
+            &mut font_system,
+            text,
+            &attrs,
+            Shaping::Advanced,
+            8,
+            Direction::Auto,
+        );
 
-        let layout_unbounded = line.layout(font_size, start_width_opt, wrap, align_opt, None);
+        let layout_unbounded = line.layout(
+            font_size,
+            start_width_opt,
+            wrap,
+            align_opt,
+            None,
+            Hinting::Disabled,
+        );
         let max_width = layout_unbounded.iter().map(|l| l.w).fold(0.0, f32::max);
         let new_limit = match start_width_opt {
             Some(start_width) => f32::min(start_width, max_width),
             None => max_width,
         };
 
-        let layout_bounded = line.layout(font_size, Some(new_limit), wrap, align_opt, None);
+        let layout_bounded = line.layout(
+            font_size,
+            Some(new_limit),
+            wrap,
+            align_opt,
+            None,
+            Hinting::Disabled,
+        );
         let bounded_max_width = layout_bounded.iter().map(|l| l.w).fold(0.0, f32::max);
 
         // For debugging:
@@ -103,15 +124,10 @@ fn wrap_extra_line() {
 
     let mut buffer = buffer.borrow_with(&mut font_system);
 
-    // Add some text!
+    // Configure wrap and size, then add text
     buffer.set_wrap(Wrap::Word);
-    buffer.set_text("Lorem ipsum dolor sit amet, qui minim labore adipisicing\n\nweeewoooo minim sint cillum sint consectetur cupidatat.", &Attrs::new().family(cosmic_text_tessera_fork::Family::Name("Inter")), Shaping::Advanced, None);
-
-    // Set a size for the text buffer, in pixels
     buffer.set_size(Some(50.0), Some(1000.0));
-
-    // Perform shaping as desired
-    buffer.shape_until_scroll(false);
+    buffer.set_text("Lorem ipsum dolor sit amet, qui minim labore adipisicing\n\nweeewoooo minim sint cillum sint consectetur cupidatat.", &Attrs::new().family(cosmic_text::Family::Name("Inter")), Shaping::Advanced, None);
 
     let empty_lines = buffer.layout_runs().filter(|x| x.line_w == 0.).count();
     let overflow_lines = buffer.layout_runs().filter(|x| x.line_w > 50.).count();

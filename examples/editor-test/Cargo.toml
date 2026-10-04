@@ -11,5 +11,5 @@ cosmic-text = { path = "../../", package = "cosmic-text-tessera-fork" }
 env_logger = "0.10"
 fontdb = "0.13"
 log = "0.4"
-orbclient = "0.3.35"
-unicode-segmentation = "1.7"
+orbclient = "0.3.50"
+unicode-segmentation = "1.12"

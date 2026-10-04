@@ -6,19 +6,67 @@ use alloc::sync::Arc;
 use alloc::vec::Vec;
 use core::fmt;
 use core::ops::{Deref, DerefMut};
-use fontdb::Query;
+use fontdb::{FaceInfo, Query, Style};
+use skrifa::raw::{ReadError, TableProvider as _};
+use skrifa::MetadataProvider;
 
-// re-export fontdb and rustybuzz
+// re-export fontdb and harfrust
 pub use fontdb;
-pub use rustybuzz;
+pub use harfrust;
 
 use super::fallback::{Fallback, Fallbacks, MonospaceFallbackInfo, PlatformFallback};
 
+// The fields are used in the derived Ord implementation for sorting fallback candidates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FontMatchKey {
+    pub(crate) not_emoji: bool,
     pub(crate) font_weight_diff: u16,
+    pub(crate) font_stretch_diff: u16,
+    pub(crate) font_style_diff: u8,
     pub(crate) font_weight: u16,
+    pub(crate) font_stretch: u16,
     pub(crate) id: fontdb::ID,
+    pub(crate) variable_weight_match: bool,
+}
+
+impl FontMatchKey {
+    fn new(attrs: &Attrs, face: &FaceInfo, db: &fontdb::Database) -> FontMatchKey {
+        // TODO: smarter way of detecting emoji
+        let not_emoji = !face.post_script_name.contains("Emoji");
+        let font_weight_diff = attrs.weight.0.abs_diff(face.weight.0);
+
+        let variable_weight_match = font_weight_diff != 0
+            && db.with_face_data(face.id, |font_data, face_index| {
+                let font_ref = skrifa::FontRef::from_index(font_data, face_index).ok()?;
+                let axis = font_ref.axes().get_by_tag(skrifa::Tag::new(b"wght"))?;
+                let w = attrs.weight.0 as f32;
+                Some(w >= axis.min_value() && w <= axis.max_value())
+            }) == Some(Some(true));
+        let font_weight = face.weight.0;
+        let font_stretch_diff = attrs.stretch.to_number().abs_diff(face.stretch.to_number());
+        let font_stretch = face.stretch.to_number();
+        let font_style_diff = match (attrs.style, face.style) {
+            (Style::Normal, Style::Normal)
+            | (Style::Italic, Style::Italic)
+            | (Style::Oblique, Style::Oblique) => 0,
+            (Style::Italic, Style::Oblique) | (Style::Oblique, Style::Italic) => 1,
+            (Style::Normal, Style::Italic)
+            | (Style::Normal, Style::Oblique)
+            | (Style::Italic, Style::Normal)
+            | (Style::Oblique, Style::Normal) => 2,
+        };
+        let id = face.id;
+        FontMatchKey {
+            not_emoji,
+            font_weight_diff,
+            font_stretch_diff,
+            font_style_diff,
+            font_weight,
+            font_stretch,
+            id,
+            variable_weight_match,
+        }
+    }
 }
 
 struct FontCachedCodepointSupportInfo {
@@ -146,12 +194,90 @@ impl FontSystem {
 
     /// Create a new [`FontSystem`] with a pre-specified set of fonts.
     pub fn new_with_fonts(fonts: impl IntoIterator<Item = fontdb::Source>) -> Self {
-        let locale = Self::get_locale();
-        log::debug!("Locale: {locale}");
+        let mut db = fontdb::Database::new();
+        Self::load_fonts(&mut db, fonts.into_iter());
+        Self::finish_with_db(db)
+    }
 
+    /// Create a new [`FontSystem`] backed by a persistent on-disk system-font index cache
+    /// at the platform's conventional cache location
+    /// (e.g. `$XDG_CACHE_HOME/cosmic-text/fonts.cache`).
+    ///
+    /// Falls back to a normal, uncached scan if no cache directory can be determined.
+    #[cfg(all(feature = "std", not(target_arch = "wasm32")))]
+    pub fn new_cached() -> Self {
+        Self::new_with_fonts_and_cache(core::iter::empty())
+    }
+
+    /// Returns the default system-font cache file path used by [`FontSystem::new_cached`]
+    /// and [`FontSystem::new_with_fonts_and_cache`]
+    /// (`<cache-dir>/cosmic-text/fonts.cache`, following the platform's conventional cache
+    /// directory).
+    ///
+    /// Returns `None` if no cache directory can be determined from the environment.
+    #[cfg(all(feature = "std", not(target_arch = "wasm32")))]
+    pub fn default_cache_path() -> Option<std::path::PathBuf> {
+        super::cache::default_cache_path()
+    }
+
+    /// Like [`FontSystem::new_with_fonts`], but reads from and writes to a persistent
+    /// system-font index cache at the default platform cache location (see
+    /// [`FontSystem::new_cached`]).
+    ///
+    /// The cache path is resolved automatically; if no cache directory can be determined
+    /// this falls back to a normal, uncached scan.
+    /// The user-provided `fonts` are always loaded fresh and
+    /// are never persisted to the cache
+    ///
+    /// To cache at an explicit location instead, use
+    /// [`FontSystem::new_with_fonts_and_cache_path`].
+    #[cfg(all(feature = "std", not(target_arch = "wasm32")))]
+    pub fn new_with_fonts_and_cache(fonts: impl IntoIterator<Item = fontdb::Source>) -> Self {
+        Self::new_with_fonts_and_cache_inner(fonts, Self::default_cache_path())
+    }
+
+    /// Like [`FontSystem::new_with_fonts_and_cache`], but uses the persistent system-font
+    /// index cache at the explicitly provided `cache_path` rather than the default
+    /// location.
+    #[cfg(all(feature = "std", not(target_arch = "wasm32")))]
+    pub fn new_with_fonts_and_cache_path(
+        fonts: impl IntoIterator<Item = fontdb::Source>,
+        cache_path: std::path::PathBuf,
+    ) -> Self {
+        Self::new_with_fonts_and_cache_inner(fonts, Some(cache_path))
+    }
+
+    #[cfg(all(feature = "std", not(target_arch = "wasm32")))]
+    fn new_with_fonts_and_cache_inner(
+        fonts: impl IntoIterator<Item = fontdb::Source>,
+        cache_path: Option<std::path::PathBuf>,
+    ) -> Self {
         let mut db = fontdb::Database::new();
 
-        Self::load_fonts(&mut db, fonts.into_iter());
+        let now = std::time::Instant::now();
+
+        match cache_path {
+            Some(cache_path) => super::cache::load_system_fonts_cached(&mut db, &cache_path),
+            None => db.load_system_fonts(),
+        }
+        for source in fonts {
+            db.load_font_source(source);
+        }
+
+        log::debug!(
+            "Loaded {} font faces in {}ms.",
+            db.len(),
+            now.elapsed().as_millis()
+        );
+
+        Self::finish_with_db(db)
+    }
+
+    /// Apply the default font families and finish constructing the [`FontSystem`] from a
+    /// loaded font database.
+    fn finish_with_db(mut db: fontdb::Database) -> Self {
+        let locale = Self::get_locale();
+        log::debug!("Locale: {locale}");
 
         //TODO: configurable default fonts
         db.set_monospace_family("Noto Sans Mono");
@@ -182,19 +308,20 @@ impl FontSystem {
         if cfg!(feature = "monospace_fallback") {
             for &id in &monospace_font_ids {
                 db.with_face_data(id, |font_data, face_index| {
-                    let _ = ttf_parser::Face::parse(font_data, face_index).map(|face| {
-                        face.tables()
-                            .gpos
-                            .into_iter()
-                            .chain(face.tables().gsub)
-                            .flat_map(|table| table.scripts)
-                            .inspect(|script| {
-                                per_script_monospace_font_ids
-                                    .entry(script.tag.to_bytes())
-                                    .or_default()
-                                    .insert(id);
-                            })
-                    });
+                    let face = skrifa::FontRef::from_index(font_data, face_index)?;
+                    for script in face
+                        .gpos()?
+                        .script_list()?
+                        .script_records()
+                        .iter()
+                        .chain(face.gsub()?.script_list()?.script_records().iter())
+                    {
+                        per_script_monospace_font_ids
+                            .entry(script.script_tag().into_bytes())
+                            .or_default()
+                            .insert(id);
+                    }
+                    Ok::<_, ReadError>(())
                 });
             }
         }
@@ -324,12 +451,7 @@ impl FontSystem {
                 let mut font_match_keys = self
                     .db
                     .faces()
-                    .filter(|face| attrs.matches(face))
-                    .map(|face| FontMatchKey {
-                        font_weight_diff: attrs.weight.0.abs_diff(face.weight.0),
-                        font_weight: face.weight.0,
-                        id: face.id,
-                    })
+                    .map(|face| FontMatchKey::new(attrs, face, &self.db))
                     .collect::<Vec<_>>();
 
                 // Sort so we get the keys with weight_offset=0 first
@@ -355,11 +477,7 @@ impl FontSystem {
                         font_match_keys.insert(0, match_key);
                     } else if let Some(face) = self.db.face(id) {
                         // else insert in front
-                        let match_key = FontMatchKey {
-                            font_weight_diff: attrs.weight.0.abs_diff(face.weight.0),
-                            font_weight: face.weight.0,
-                            id,
-                        };
+                        let match_key = FontMatchKey::new(attrs, face, &self.db);
                         font_match_keys.insert(0, match_key);
                     } else {
                         log::error!("Could not get face from db, that should've been there.");
