@@ -891,6 +891,7 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
                 self.with_buffer_mut(|buffer| {
                     let mut scroll = buffer.scroll();
                     scroll.vertical += pixels;
+                    buffer.shape_until_scroll(font_system, false);
                     buffer.set_scroll(scroll);
                 });
             }
