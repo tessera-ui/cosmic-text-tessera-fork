@@ -42,7 +42,7 @@ const fn common_fallback() -> &'static [&'static str] {
         /* Symbols fallbacks */
         "Noto Sans Symbols",
         "Noto Sans Symbols2",
-        /* Emoji fallbacks*/
+        /* Emoji fallbacks */
         "Noto Color Emoji",
         //TODO: Add CJK script here for doublewides?
     ]

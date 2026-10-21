@@ -165,8 +165,8 @@ fn test_ellipsize_mixed_ltr_rtl_ltr_middle_three_lines() {
         .validate_text_rendering();
 }
 
-/// Regression rendering test: Fluent's fl!() wraps interpolated values with BiDi
-/// isolation characters. With the bug, this rendered as "Workspace… 2"
+/// Regression rendering test: Fluent's fl!() wraps interpolated values with
+/// BiDi isolation characters. With the bug, this rendered as "Workspace… 2"
 /// After the fix it must render the full "Workspace 2" without ellipsis.
 #[test]
 fn test_ellipsize_bidi_isolates_middle_bug() {

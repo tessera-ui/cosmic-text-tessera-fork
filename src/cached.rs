@@ -1,7 +1,8 @@
 use core::fmt::Debug;
 use core::mem;
 
-/// Helper for caching a value when the value is optionally present in the 'unused' state.
+/// Helper for caching a value when the value is optionally present in the
+/// 'unused' state.
 #[derive(Clone, Debug)]
 pub enum Cached<T: Clone + Debug> {
     Empty,

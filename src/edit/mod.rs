@@ -152,7 +152,8 @@ pub enum Selection {
 
 /// A trait to allow easy replacements of [`Editor`], like `SyntaxEditor`
 pub trait Edit<'buffer> {
-    /// Mutably borrows `self` together with an [`FontSystem`] for more convenient methods
+    /// Mutably borrows `self` together with an [`FontSystem`] for more
+    /// convenient methods
     fn borrow_with<'font_system>(
         &'font_system mut self,
         font_system: &'font_system mut FontSystem,
@@ -291,7 +292,8 @@ pub trait Edit<'buffer> {
     /// Get the current tab width
     fn tab_width(&self) -> u16;
 
-    /// Set the current tab width. A `tab_width` of 0 is not allowed, and will be ignored
+    /// Set the current tab width. A `tab_width` of 0 is not allowed, and will
+    /// be ignored
     fn set_tab_width(&mut self, tab_width: u16);
 
     /// Shape lines until scroll, after adjusting scroll if the cursor moved
@@ -306,12 +308,15 @@ pub trait Edit<'buffer> {
     /// Copy selection
     fn copy_selection(&self) -> Option<String>;
 
-    /// Delete selection, adjusting cursor and returning true if there was a selection
-    // Also used by backspace, delete, insert, and enter when there is a selection
+    /// Delete selection, adjusting cursor and returning true if there was a
+    /// selection
+    // Also used by backspace, delete, insert, and enter when there is a
+    // selection
     fn delete_selection(&mut self) -> bool;
 
-    /// Insert a string at the current cursor or replacing the current selection with the given
-    /// attributes, or with the previous character's attributes if None is given.
+    /// Insert a string at the current cursor or replacing the current selection
+    /// with the given attributes, or with the previous character's
+    /// attributes if None is given.
     fn insert_string(&mut self, data: &str, attrs_list: Option<AttrsList>) {
         self.delete_selection();
         let new_cursor = self.insert_at(self.cursor(), data, attrs_list);
@@ -349,7 +354,8 @@ impl<'buffer, E: Edit<'buffer>> BorrowedWithFontSystem<'_, E> {
         })
     }
 
-    /// Set the current tab width. A `tab_width` of 0 is not allowed, and will be ignored
+    /// Set the current tab width. A `tab_width` of 0 is not allowed, and will
+    /// be ignored
     pub fn set_tab_width(&mut self, tab_width: u16) {
         self.inner.set_tab_width(tab_width);
     }

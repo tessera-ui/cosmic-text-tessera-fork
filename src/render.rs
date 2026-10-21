@@ -17,7 +17,8 @@ pub trait Renderer {
     fn glyph(&mut self, physical_glyph: PhysicalGlyph, color: Color);
 }
 
-/// Draw text decoration lines (underline, strikethrough, overline) for a layout run.
+/// Draw text decoration lines (underline, strikethrough, overline) for a layout
+/// run.
 pub fn render_decoration<R: Renderer>(renderer: &mut R, run: &LayoutRun, default_color: Color) {
     for span in run.decorations {
         draw_decoration_span(renderer, run, span, default_color);

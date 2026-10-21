@@ -60,7 +60,8 @@ fn han_unification(locale: &str) -> &'static [&'static str] {
 // Fallbacks to use per script
 fn script_fallback(script: Script, locale: &str) -> &'static [&'static str] {
     //TODO: abstract style (sans/serif/monospaced)
-    //TODO: pull more data from about:config font.name-list.sans-serif in Firefox
+    //TODO: pull more data from about:config font.name-list.sans-serif in
+    // Firefox
     match script {
         Script::Adlam => &["Noto Sans Adlam"],
         Script::Arabic => &["Geeza Pro"],

@@ -2,17 +2,21 @@
 
 //! # COSMIC Text
 //!
-//! This library provides advanced text handling in a generic way. It provides abstractions for
-//! shaping, font discovery, font fallback, layout, rasterization, and editing. Shaping utilizes
-//! harfrust, font discovery utilizes fontdb, and the rasterization is optional and utilizes
-//! swash. The other features are developed internal to this library.
+//! This library provides advanced text handling in a generic way. It provides
+//! abstractions for shaping, font discovery, font fallback, layout,
+//! rasterization, and editing. Shaping utilizes harfrust, font discovery
+//! utilizes fontdb, and the rasterization is optional and utilizes swash. The
+//! other features are developed internal to this library.
 //!
-//! It is recommended that you start by creating a [`FontSystem`], after which you can create a
-//! [`Buffer`], provide it with some text, and then inspect the layout it produces. At this
-//! point, you can use the `SwashCache` to rasterize glyphs into either images or pixels.
+//! It is recommended that you start by creating a [`FontSystem`], after which
+//! you can create a [`Buffer`], provide it with some text, and then inspect the
+//! layout it produces. At this point, you can use the `SwashCache` to rasterize
+//! glyphs into either images or pixels.
 //!
 //! ```
-//! use cosmic_text_tessera_fork::{Attrs, Color, FontSystem, SwashCache, Buffer, Metrics, Shaping};
+//! use cosmic_text_tessera_fork::{
+//!     Attrs, Buffer, Color, FontSystem, Metrics, Shaping, SwashCache,
+//! };
 //!
 //! // A FontSystem provides access to detected system fonts, create one per application
 //! let mut font_system = FontSystem::new();

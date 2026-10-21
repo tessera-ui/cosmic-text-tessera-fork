@@ -48,10 +48,10 @@ fn finish_change<'buffer, E: Edit<'buffer>>(
 
 /// Evaluate if an [`ViEditor`] changed based on its last saved state.
 fn eval_changed(commands: &cosmic_undo_2::Commands<Change>, pivot: Option<usize>) -> bool {
-    // Editors are considered modified if the current change index is unequal to the last
-    // saved index or if `pivot` is None.
-    // The latter case handles a never saved editor with a current command index of None.
-    // Check the unit tests for an example.
+    // Editors are considered modified if the current change index is unequal to
+    // the last saved index or if `pivot` is None.
+    // The latter case handles a never saved editor with a current command index
+    // of None. Check the unit tests for an example.
     match (commands.current_command_index(), pivot) {
         (Some(current), Some(pivot)) => current != pivot,
         // Edge case for an editor with neither a save point nor any changes.
@@ -117,10 +117,12 @@ fn search<'buffer, E: Edit<'buffer>>(editor: &mut E, value: &str, forwards: bool
 }
 
 fn select_in<'buffer, E: Edit<'buffer>>(editor: &mut E, start_c: char, end_c: char, include: bool) {
-    // Find the largest encompasing object, or if there is none, find the next one.
+    // Find the largest encompasing object, or if there is none, find the next
+    // one.
     let cursor = editor.cursor();
     let (start, end) = editor.with_buffer(|buffer| {
-        // Search forwards for isolated end character, counting start and end characters found
+        // Search forwards for isolated end character, counting start and end
+        // characters found
         let mut end = cursor;
         let mut starts = 0;
         let mut ends = 0;
@@ -203,7 +205,8 @@ impl<'syntax_system, 'buffer> ViEditor<'syntax_system, 'buffer> {
         }
     }
 
-    /// Modifies the theme of the [`SyntaxEditor`], returning false if the theme is missing
+    /// Modifies the theme of the [`SyntaxEditor`], returning false if the theme
+    /// is missing
     pub fn update_theme(&mut self, theme_name: &str) -> bool {
         self.editor.update_theme(theme_name)
     }
@@ -259,13 +262,14 @@ impl<'syntax_system, 'buffer> ViEditor<'syntax_system, 'buffer> {
 
     /// Set current change as the save (or pivot) point.
     ///
-    /// A pivot point is the last saved index. Anything before or after the pivot indicates that
-    /// the editor has been changed or is unsaved.
+    /// A pivot point is the last saved index. Anything before or after the
+    /// pivot indicates that the editor has been changed or is unsaved.
     ///
     /// Undoing changes down to the pivot point sets the editor as unchanged.
     /// Redoing changes up to the pivot point sets the editor as unchanged.
     ///
-    /// Undoing or redoing changes beyond the pivot point sets the editor to changed.
+    /// Undoing or redoing changes beyond the pivot point sets the editor to
+    /// changed.
     pub fn save_point(&mut self) {
         self.save_pivot = Some(self.commands.current_command_index().unwrap_or_default());
         self.changed = false;
@@ -453,7 +457,7 @@ impl<'syntax_system, 'buffer> ViEditor<'syntax_system, 'buffer> {
                     } else {
                         match self.parser.mode {
                             ViMode::Insert | ViMode::Replace => false,
-                            _ => true, /*TODO: determine block cursor in other modes*/
+                            _ => true, /* TODO: determine block cursor in other modes */
                         }
                     };
 
@@ -627,7 +631,8 @@ impl<'buffer> Edit<'buffer> for ViEditor<'_, 'buffer> {
         }
 
         let key = match action {
-            //TODO: this leaves lots of room for issues in translation, should we directly accept Key?
+            //TODO: this leaves lots of room for issues in translation, should we directly accept
+            // Key?
             Action::Backspace => Key::Backspace,
             Action::Delete => Key::Delete,
             Action::Motion(Motion::Down) => Key::Down,
@@ -646,7 +651,8 @@ impl<'buffer> Edit<'buffer> for ViEditor<'_, 'buffer> {
             _ => {
                 log::debug!("Pass through action {action:?}");
                 editor.action(font_system, action);
-                // Always finish change when passing through (TODO: group changes)
+                // Always finish change when passing through (TODO: group
+                // changes)
                 finish_change(
                     editor,
                     &mut self.commands,
@@ -728,7 +734,8 @@ impl<'buffer> Edit<'buffer> for ViEditor<'_, 'buffer> {
                                         // Insert at next line
                                         cursor.line += 1;
                                     } else {
-                                        // Previous line will be moved down, so set cursor to next line
+                                        // Previous line will be moved down, so
+                                        // set cursor to next line
                                         cursor.line += 1;
                                         editor.set_cursor(cursor);
                                         cursor.line -= 1;
@@ -743,7 +750,8 @@ impl<'buffer> Edit<'buffer> for ViEditor<'_, 'buffer> {
                                     //TODO: Hack to allow immediate up/down
                                     editor.shape_as_needed(font_system, false);
 
-                                    // Move to inserted line, preserving cursor x position
+                                    // Move to inserted line, preserving cursor
+                                    // x position
                                     if after {
                                         editor.action(font_system, Action::Motion(Motion::Down));
                                     } else {
@@ -1048,7 +1056,8 @@ impl<'buffer> Edit<'buffer> for ViEditor<'_, 'buffer> {
                                             .last()
                                             .unwrap_or(0);
                                         if cursor.index == 0 {
-                                            // Try again, searching previous line
+                                            // Try again, searching previous
+                                            // line
                                             continue;
                                         }
                                     } else if cursor.line > 0 {
@@ -1075,7 +1084,8 @@ impl<'buffer> Edit<'buffer> for ViEditor<'_, 'buffer> {
                                             .last()
                                             .unwrap_or(0);
                                         if cursor.index == 0 {
-                                            // Try again, searching previous line
+                                            // Try again, searching previous
+                                            // line
                                             continue;
                                         }
                                     } else if cursor.line > 0 {

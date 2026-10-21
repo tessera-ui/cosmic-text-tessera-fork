@@ -192,7 +192,8 @@ impl FontFeatures {
     }
 }
 
-/// A wrapper for letter spacing to get around that f32 doesn't implement Eq and Hash
+/// A wrapper for letter spacing to get around that f32 doesn't implement Eq and
+/// Hash
 #[derive(Clone, Copy, Debug)]
 pub struct LetterSpacing(pub f32);
 

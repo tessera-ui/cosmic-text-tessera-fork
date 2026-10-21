@@ -156,8 +156,9 @@ fn test_mixed_direction_paragraphs_do_not_panic() {
         .db_mut()
         .load_font_data(std::fs::read("fonts/NotoSansHebrew.ttf").unwrap());
 
-    // Latin 'A' and Hebrew Aleph separated by each BidiClass::B code point, including
-    // PS (U+2029) and the ASCII FS (U+001C), to cover more than just newlines.
+    // Latin 'A' and Hebrew Aleph separated by each BidiClass::B code point,
+    // including PS (U+2029) and the ASCII FS (U+001C), to cover more than
+    // just newlines.
     for sep in [
         '\u{000A}', '\u{000D}', '\u{001C}', '\u{001D}', '\u{001E}', '\u{0085}', '\u{2029}',
     ] {

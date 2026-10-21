@@ -15,8 +15,9 @@ fn empty_lines_use_span_metrics() {
     let attrs = Attrs::new();
     let small_attrs = attrs.clone().metrics(Metrics::relative(8.0, 1.2));
 
-    // The empty lines from \n\n at start and end should use 8.0 * 1.2 = 9.6 line height.
-    // All newlines are inside the small_attrs span so the empty lines are clearly within it.
+    // The empty lines from \n\n at start and end should use 8.0 * 1.2 = 9.6
+    // line height. All newlines are inside the small_attrs span so the
+    // empty lines are clearly within it.
     buffer.set_rich_text(
         [
             ("Before", attrs.clone()),

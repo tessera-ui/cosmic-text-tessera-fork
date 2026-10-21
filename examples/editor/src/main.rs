@@ -122,7 +122,8 @@ fn main() {
                     };
                     editor.shape_as_needed(true);
                     editor.draw(&mut swash_cache, |x, y, w, h, color| {
-                        // Note: due to softbuffer and tiny_skia having incompatible internal color representations we swap
+                        // Note: due to softbuffer and tiny_skia having
+                        // incompatible internal color representations we swap
                         // the red and blue channels here
                         paint.set_color_rgba8(color.b(), color.g(), color.r(), color.a());
                         pixmap.fill_rect(
@@ -279,7 +280,8 @@ fn main() {
                     device_id: _,
                     position,
                 } => {
-                    // Update saved mouse position for use when handling click events
+                    // Update saved mouse position for use when handling click
+                    // events
                     mouse_x = position.x;
                     mouse_y = position.y;
 
@@ -291,7 +293,8 @@ fn main() {
                             y: position.y as i32,
                         });
 
-                        // Scroll if cursor is near edge of window while dragging
+                        // Scroll if cursor is near edge of window while
+                        // dragging
                         if mouse_y <= 5.0 {
                             editor.action(Action::Scroll { pixels: -20.0 });
                         } else if mouse_y - 5.0 >= window.inner_size().height as f64 {

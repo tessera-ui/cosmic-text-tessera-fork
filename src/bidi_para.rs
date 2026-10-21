@@ -4,7 +4,8 @@ use alloc::vec::Vec;
 use unicode_bidi::{bidi_class, BidiClass, BidiInfo, ParagraphInfo};
 
 /// An iterator over the paragraphs in the input text.
-/// It is equivalent to [`core::str::Lines`] but follows `unicode-bidi` behaviour.
+/// It is equivalent to [`core::str::Lines`] but follows `unicode-bidi`
+/// behaviour.
 #[derive(Debug)]
 pub struct BidiParagraphs<'text> {
     text: &'text str,
@@ -61,12 +62,14 @@ impl<'text> Iterator for BidiParagraphs<'text> {
     fn next(&mut self) -> Option<Self::Item> {
         let para = self.info.next()?;
         let paragraph = &self.text[para.range];
-        // `para.range` includes the newline that splits the line, so remove it if present
+        // `para.range` includes the newline that splits the line, so remove it
+        // if present
         let mut char_indices = paragraph.char_indices();
         char_indices
             .next_back()
             .and_then(|(i, c)| {
-                // `BidiClass::B` is a Paragraph_Separator (various newline characters)
+                // `BidiClass::B` is a Paragraph_Separator (various newline
+                // characters)
                 (bidi_class(c) == BidiClass::B).then_some(i)
             })
             .map_or(Some(paragraph), |i| Some(&paragraph[0..i]))

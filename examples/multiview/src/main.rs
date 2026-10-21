@@ -101,7 +101,8 @@ fn main() {
 
                         // Set scroll to view scroll
                         buffer.set_scroll(*scroll);
-                        // Set size, will relayout and shape until scroll if changed
+                        // Set size, will relayout and shape until scroll if
+                        // changed
                         buffer.set_size(Some(width as f32), Some(height as f32));
                         // Shape until scroll, ensures scroll is clamped
                         //TODO: ability to prune with multiple views?

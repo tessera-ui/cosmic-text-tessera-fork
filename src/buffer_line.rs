@@ -71,8 +71,8 @@ impl BufferLine {
 
     /// Set text and attributes list
     ///
-    /// Will reset shape and layout if it differs from current text and attributes list.
-    /// Returns true if the line was reset
+    /// Will reset shape and layout if it differs from current text and
+    /// attributes list. Returns true if the line was reset
     pub fn set_text<T: AsRef<str>>(
         &mut self,
         text: T,
@@ -143,8 +143,8 @@ impl BufferLine {
     /// Set the text alignment
     ///
     /// Will reset layout if it differs from current alignment.
-    /// Setting to None will use `Align::Right` for RTL lines, and `Align::Left` for LTR lines.
-    /// Returns true if the line was reset
+    /// Setting to None will use `Align::Right` for RTL lines, and `Align::Left`
+    /// for LTR lines. Returns true if the line was reset
     pub fn set_align(&mut self, align: Option<Align>) -> bool {
         if align != self.align {
             self.align = align;
@@ -293,8 +293,8 @@ impl BufferLine {
         LayoutRunIter::from_lines(core::slice::from_ref(self), height_opt, line_height, 0.0, 0)
     }
 
-    /// Get line metadata. This will be None if [`BufferLine::set_metadata`] has not been called
-    /// after the last reset of shaping and layout caches
+    /// Get line metadata. This will be None if [`BufferLine::set_metadata`] has
+    /// not been called after the last reset of shaping and layout caches
     pub const fn metadata(&self) -> Option<usize> {
         self.metadata
     }
@@ -306,7 +306,8 @@ impl BufferLine {
 
     /// Makes an empty buffer line.
     ///
-    /// The buffer line is in an invalid state after this is called. See [`Self::reset_new`].
+    /// The buffer line is in an invalid state after this is called. See
+    /// [`Self::reset_new`].
     pub(crate) fn empty() -> Self {
         Self {
             text: String::default(),
@@ -322,14 +323,16 @@ impl BufferLine {
 
     /// Reclaim attributes list memory that isn't needed any longer.
     ///
-    /// The buffer line is in an invalid state after this is called. See [`Self::reset_new`].
+    /// The buffer line is in an invalid state after this is called. See
+    /// [`Self::reset_new`].
     pub(crate) fn reclaim_attrs(&mut self) -> AttrsList {
         mem::replace(&mut self.attrs_list, AttrsList::new(&Attrs::new()))
     }
 
     /// Reclaim text memory that isn't needed any longer.
     ///
-    /// The buffer line is in an invalid state after this is called. See [`Self::reset_new`].
+    /// The buffer line is in an invalid state after this is called. See
+    /// [`Self::reset_new`].
     pub(crate) fn reclaim_text(&mut self) -> String {
         let mut text = mem::take(&mut self.text);
         text.clear();

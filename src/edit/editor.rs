@@ -173,14 +173,12 @@ impl<'buffer> Editor<'buffer> {
     /// preserve the cursor position intelligently.
     ///
     /// - If the old cursor position is still valid in the new text, it is kept.
-    /// - If the cursor's line exists but is now shorter, the cursor moves to the end of that line.
-    /// - If the cursor's line no longer exists, the cursor moves to the end of the document.
+    /// - If the cursor's line exists but is now shorter, the cursor moves to
+    ///   the end of that line.
+    /// - If the cursor's line no longer exists, the cursor moves to the end of
+    ///   the document.
     /// - Any active selection is cleared.
-    pub fn set_text_reactive(
-        &mut self,
-        text: &str,
-        attrs: &Attrs<'_>,
-    ) {
+    pub fn set_text_reactive(&mut self, text: &str, attrs: &Attrs<'_>) {
         // 1. Store the old cursor position before the buffer is mutated.
         let old_cursor = self.cursor();
 
@@ -190,8 +188,8 @@ impl<'buffer> Editor<'buffer> {
             buffer.set_redraw(true);
         });
 
-        // 3. Validate the old cursor position against the new buffer content
-        //    to determine the new, corrected cursor position.
+        // 3. Validate the old cursor position against the new buffer content to
+        //    determine the new, corrected cursor position.
         let new_cursor = self.with_buffer(|buffer| {
             let new_num_lines = buffer.lines.len();
 
@@ -201,16 +199,18 @@ impl<'buffer> Editor<'buffer> {
                 let new_line_len = line.text().len();
 
                 if old_cursor.index <= new_line_len {
-                    // The index is also valid, so we keep the original cursor position.
+                    // The index is also valid, so we keep the original cursor
+                    // position.
                     old_cursor
                 } else {
-                    // The index is out of bounds (the line is shorter), so move the cursor
-                    // to the end of the current line.
+                    // The index is out of bounds (the line is shorter), so move
+                    // the cursor to the end of the current
+                    // line.
                     Cursor::new(old_cursor.line, new_line_len)
                 }
             } else {
-                // The cursor's original line no longer exists, so move the cursor
-                // to the very end of the document.
+                // The cursor's original line no longer exists, so move the
+                // cursor to the very end of the document.
                 let last_line_index = new_num_lines.saturating_sub(1);
                 let last_line_len = buffer
                     .lines
@@ -222,9 +222,11 @@ impl<'buffer> Editor<'buffer> {
 
         // 4. Apply the new, validated cursor position and reset related state.
         self.set_cursor(new_cursor);
-        self.set_selection(Selection::None); // Clearing selection is the safest behavior for reactive updates.
+        self.set_selection(Selection::None); // Clearing selection is the safest
+                                             // behavior for reactive updates.
 
-        // If the cursor moved to a different line, reset the horizontal tracking preference.
+        // If the cursor moved to a different line, reset the horizontal
+        // tracking preference.
         if new_cursor.line != old_cursor.line {
             self.cursor_x_opt = None;
         }
@@ -388,7 +390,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
                 let mut last_ending = LineEnding::None;
                 if let Some(last_line) = buffer.lines.last_mut() {
                     last_ending = last_line.ending();
-                    // Ensure a valid line ending is always set on interior lines
+                    // Ensure a valid line ending is always set on interior
+                    // lines
                     if last_ending == LineEnding::None {
                         last_line.set_ending(LineEnding::default());
                     }
@@ -597,7 +600,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
             }
             Action::Insert(character) => {
                 if character.is_control() && !['\t', '\n', '\u{92}'].contains(&character) {
-                    // Filter out special chars (except for tab), use Action instead
+                    // Filter out special chars (except for tab), use Action
+                    // instead
                     log::debug!("Refusing to insert control character {character:?}");
                 } else if character == '\n' {
                     self.action(font_system, Action::Enter);
@@ -608,7 +612,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
                 }
             }
             Action::Enter => {
-                //TODO: what about indenting more after opening brackets or parentheses?
+                //TODO: what about indenting more after opening brackets or
+                // parentheses?
                 if self.auto_indent {
                     let mut string = String::from("\n");
                     self.with_buffer(|buffer| {
@@ -627,7 +632,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
                     self.insert_string("\n", None);
                 }
 
-                // Ensure line is properly shaped and laid out (for potential immediate commands)
+                // Ensure line is properly shaped and laid out (for potential
+                // immediate commands)
                 let line_i = self.cursor.line;
                 self.with_buffer_mut(|buffer| {
                     buffer.line_layout(font_system, line_i);
@@ -706,7 +712,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
                 // For every line in selection
                 let tab_width: usize = self.tab_width().into();
                 for line_i in start.line..=end.line {
-                    // Determine indexes of last indent and first character after whitespace
+                    // Determine indexes of last indent and first character
+                    // after whitespace
                     let mut after_whitespace = 0;
                     let mut required_indent = 0;
                     self.with_buffer(|buffer| {
@@ -714,7 +721,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
                         let text = line.text();
 
                         if self.selection == Selection::None {
-                            //Selection::None counts whitespace from the cursor backwards
+                            //Selection::None counts whitespace from the cursor
+                            // backwards
                             let whitespace_length = match line.text()[0..self.cursor.index]
                                 .chars()
                                 .rev()
@@ -727,7 +735,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
                             required_indent = tab_width - (whitespace_length % tab_width);
                             after_whitespace = self.cursor.index;
                         } else {
-                            // Other selections count whitespace from  the start of the line
+                            // Other selections count whitespace from  the start
+                            // of the line
                             for (count, (index, c)) in text.char_indices().enumerate() {
                                 if !c.is_whitespace() {
                                     after_whitespace = index;
@@ -746,7 +755,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
 
                     // Adjust cursor
                     if self.cursor.line == line_i {
-                        //TODO: should we be forcing cursor index to current indent location?
+                        //TODO: should we be forcing cursor index to current
+                        // indent location?
                         if self.cursor.index < after_whitespace {
                             self.cursor.index = after_whitespace;
                         }
@@ -778,7 +788,8 @@ impl<'buffer> Edit<'buffer> for Editor<'buffer> {
                 // For every line in selection
                 let tab_width: usize = self.tab_width().into();
                 for line_i in start.line..=end.line {
-                    // Determine indexes of last indent and first character after whitespace
+                    // Determine indexes of last indent and first character
+                    // after whitespace
                     let mut last_indent = 0;
                     let mut after_whitespace = 0;
                     self.with_buffer(|buffer| {

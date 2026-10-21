@@ -57,14 +57,16 @@ pub struct LayoutRun<'a> {
 }
 
 impl LayoutRun<'_> {
-    /// Return an iterator of `(x_left, x_width)` pixel spans for the highlighted areas
-    /// between `cursor_start` and `cursor_end` within this run.
+    /// Return an iterator of `(x_left, x_width)` pixel spans for the
+    /// highlighted areas between `cursor_start` and `cursor_end` within
+    /// this run.
     ///
-    /// For pure LTR or pure RTL runs this yields at most one span. For mixed BiDi runs
-    /// (where selected and unselected glyphs interleave visually) it yields multiple
-    /// disjoint spans.
+    /// For pure LTR or pure RTL runs this yields at most one span. For mixed
+    /// BiDi runs (where selected and unselected glyphs interleave visually)
+    /// it yields multiple disjoint spans.
     ///
-    /// Returns an empty iterator if the cursor range does not intersect this run.
+    /// Returns an empty iterator if the cursor range does not intersect this
+    /// run.
     pub fn highlight(
         &self,
         cursor_start: Cursor,
@@ -168,7 +170,8 @@ impl LayoutRun<'_> {
                 return Some((glyph_i, offset));
             }
         }
-        // in mixed BiDi the last logical glyph may not be the last visual glyph.
+        // in mixed BiDi the last logical glyph may not be the last visual
+        // glyph.
         for (glyph_i, glyph) in self.glyphs.iter().enumerate() {
             if cursor.index == glyph.end {
                 return Some((glyph_i, glyph.w));
@@ -180,7 +183,8 @@ impl LayoutRun<'_> {
         None
     }
 
-    /// Get the left-edge cursor position of a glyph, accounting for paragraph direction.
+    /// Get the left-edge cursor position of a glyph, accounting for paragraph
+    /// direction.
     pub const fn cursor_from_glyph_left(&self, glyph: &LayoutGlyph) -> Cursor {
         if self.rtl {
             Cursor::new_with_affinity(self.line_i, glyph.end, Affinity::Before)
@@ -189,7 +193,8 @@ impl LayoutRun<'_> {
         }
     }
 
-    /// Get the right-edge cursor position of a glyph, accounting for paragraph direction.
+    /// Get the right-edge cursor position of a glyph, accounting for paragraph
+    /// direction.
     pub const fn cursor_from_glyph_right(&self, glyph: &LayoutGlyph) -> Cursor {
         if self.rtl {
             Cursor::new_with_affinity(self.line_i, glyph.start, Affinity::After)
@@ -308,7 +313,8 @@ impl Metrics {
         }
     }
 
-    /// Create metrics with given font size and calculate line height using relative scale
+    /// Create metrics with given font size and calculate line height using
+    /// relative scale
     pub fn relative(font_size: f32, line_height_scale: f32) -> Self {
         Self {
             font_size,
@@ -376,10 +382,11 @@ impl Buffer {
     /// Create an empty [`Buffer`] with the provided [`Metrics`].
     /// This is useful for initializing a [`Buffer`] without a [`FontSystem`].
     ///
-    /// You must populate the [`Buffer`] with at least one [`BufferLine`] before shaping and layout,
-    /// for example by calling [`Buffer::set_text`].
+    /// You must populate the [`Buffer`] with at least one [`BufferLine`] before
+    /// shaping and layout, for example by calling [`Buffer::set_text`].
     ///
-    /// If you have a [`FontSystem`] in scope, you should use [`Buffer::new`] instead.
+    /// If you have a [`FontSystem`] in scope, you should use [`Buffer::new`]
+    /// instead.
     ///
     /// # Panics
     ///
@@ -415,7 +422,8 @@ impl Buffer {
         buffer
     }
 
-    /// Mutably borrows the buffer together with an [`FontSystem`] for more convenient methods
+    /// Mutably borrows the buffer together with an [`FontSystem`] for more
+    /// convenient methods
     pub fn borrow_with<'a>(
         &'a mut self,
         font_system: &'a mut FontSystem,
@@ -426,8 +434,9 @@ impl Buffer {
         }
     }
 
-    /// Process dirty flags: invalidate shape/layout caches as needed, then clear flags.
-    /// Returns `true` if any flags were set (i.e., work may be needed).
+    /// Process dirty flags: invalidate shape/layout caches as needed, then
+    /// clear flags. Returns `true` if any flags were set (i.e., work may be
+    /// needed).
     fn resolve_dirty(&mut self) -> bool {
         let dirty = self.dirty;
         if dirty.is_empty() {
@@ -585,7 +594,8 @@ impl Buffer {
         }
         let metrics = self.metrics;
 
-        // Clamp scroll.line to valid range (lines may have been removed by editing)
+        // Clamp scroll.line to valid range (lines may have been removed by
+        // editing)
         if self.scroll.line >= self.lines.len() {
             self.scroll.line = self.lines.len().saturating_sub(1);
             self.scroll.vertical = 0.0;
@@ -594,7 +604,8 @@ impl Buffer {
         let old_scroll = self.scroll;
 
         loop {
-            // Adjust scroll.layout to be positive by moving scroll.line backwards
+            // Adjust scroll.layout to be positive by moving scroll.line
+            // backwards
             while self.scroll.vertical < 0.0 {
                 if self.scroll.line > 0 {
                     let line_i = self.scroll.line - 1;
@@ -645,7 +656,8 @@ impl Buffer {
                     total_height += line_height;
                 }
 
-                // Adjust scroll.vertical to be smaller by moving scroll.line forwards
+                // Adjust scroll.vertical to be smaller by moving scroll.line
+                // forwards
                 if line_i == self.scroll.line && layout_height <= self.scroll.vertical {
                     self.scroll.line += 1;
                     self.scroll.vertical -= layout_height;
@@ -795,7 +807,8 @@ impl Buffer {
         self.monospace_width
     }
 
-    /// Set monospace width monospace glyphs should be resized to match. `None` means don't resize.
+    /// Set monospace width monospace glyphs should be resized to match. `None`
+    /// means don't resize.
     pub fn set_monospace_width(&mut self, monospace_width: Option<f32>) {
         if monospace_width != self.monospace_width {
             self.monospace_width = monospace_width;
@@ -828,14 +841,16 @@ impl Buffer {
 
     /// Set the base [`Direction`] used when shaping text.
     ///
-    /// [`Direction::Auto`] (the default) detects each paragraph's base direction
-    /// from its content. [`Direction::LeftToRight`] and [`Direction::RightToLeft`]
-    /// force it for the whole buffer; use them when you know the direction from
-    /// context such as the UI locale rather than from the text.
+    /// [`Direction::Auto`] (the default) detects each paragraph's base
+    /// direction from its content. [`Direction::LeftToRight`] and
+    /// [`Direction::RightToLeft`] force it for the whole buffer; use them
+    /// when you know the direction from context such as the UI locale
+    /// rather than from the text.
     pub fn set_direction(&mut self, direction: Direction) {
         if direction != self.direction {
             self.direction = direction;
-            // DIRECTION reshapes every line, which resets layout as a side effect.
+            // DIRECTION reshapes every line, which resets layout as a side
+            // effect.
             self.dirty |= DirtyFlags::DIRECTION;
             self.redraw = true;
         }
@@ -923,7 +938,8 @@ impl Buffer {
 
         // Ensure there is an ending line with no line ending.
         // When no lines were produced (empty text), unwrap_or_default() returns
-        // LineEnding::Lf (the Default), which is != None, so we add an empty line.
+        // LineEnding::Lf (the Default), which is != None, so we add an empty
+        // line.
         let last_ending = if line_count > 0 {
             self.lines[line_count - 1].ending()
         } else {
@@ -950,7 +966,8 @@ impl Buffer {
             line_count += 1;
         }
 
-        // Discard excess lines now that we have reused as much of the existing allocations as possible.
+        // Discard excess lines now that we have reused as much of the existing
+        // allocations as possible.
         self.lines.truncate(line_count);
 
         if alignment.is_some() {
@@ -1104,7 +1121,8 @@ impl Buffer {
             }
         }
 
-        // Discard excess lines now that we have reused as much of the existing allocations as possible.
+        // Discard excess lines now that we have reused as much of the existing
+        // allocations as possible.
         self.lines.truncate(line_count);
 
         self.lines.iter_mut().for_each(|line| {
@@ -1114,7 +1132,8 @@ impl Buffer {
         self.scroll = Scroll::default();
     }
 
-    /// Set text of buffer, using an iterator of styled spans (pairs of text and attributes).
+    /// Set text of buffer, using an iterator of styled spans (pairs of text and
+    /// attributes).
     ///
     /// ```
     /// # use cosmic_text::{Attrs, Buffer, Family, FontSystem, Metrics, Shaping};
@@ -1158,9 +1177,9 @@ impl Buffer {
     /// Get the visible layout runs for rendering and other tasks.
     ///
     /// This returns an iterator over the laid-out runs that are visible in the
-    /// current scroll region. Call [`shape_until_scroll`] first to ensure the buffer
-    /// is up to date, or use [`BorrowedWithFontSystem`] which calls it
-    /// automatically.
+    /// current scroll region. Call [`shape_until_scroll`] first to ensure the
+    /// buffer is up to date, or use [`BorrowedWithFontSystem`] which calls
+    /// it automatically.
     ///
     /// [`shape_until_scroll`]: Self::shape_until_scroll
     pub fn layout_runs(&self) -> LayoutRunIter<'_> {
@@ -1217,7 +1236,8 @@ impl Buffer {
 
                                 let right_half = x >= egc_x + egc_w / 2.0;
                                 if right_half != glyph.level.is_rtl() {
-                                    // If clicking on last half of glyph, move cursor past glyph
+                                    // If clicking on last half of glyph, move
+                                    // cursor past glyph
                                     new_cursor_char += egc.len();
                                     new_cursor_affinity = Affinity::Before;
                                 }
@@ -1228,7 +1248,8 @@ impl Buffer {
 
                         let right_half = x >= glyph.x + glyph.w / 2.0;
                         if right_half != glyph.level.is_rtl() {
-                            // If clicking on last half of glyph, move cursor past glyph
+                            // If clicking on last half of glyph, move cursor
+                            // past glyph
                             new_cursor_char = cluster.len();
                             new_cursor_affinity = Affinity::Before;
                         }
@@ -1247,8 +1268,9 @@ impl Buffer {
                     None => {
                         // Click was past all glyphs in this visual run.
                         // Use the maximum glyph.end across all glyphs.
-                        // this is the logical end of this visual line's byte coverage,
-                        // correct for LTR, RTL, mixed-BiDi, and wrapped paragraphs.
+                        // this is the logical end of this visual line's byte
+                        // coverage, correct for LTR,
+                        // RTL, mixed-BiDi, and wrapped paragraphs.
                         let run_end = run.glyphs.iter().map(|g| g.end).max().unwrap_or(0);
                         new_cursor.index = run_end;
                         new_cursor.affinity = Affinity::Before;
@@ -1259,8 +1281,9 @@ impl Buffer {
 
                 break;
             } else if runs.peek().is_none() && y > run.line_y {
-                // Click below the last run: place cursor at the logical end of the
-                // line, regardless of paragraph direction or BiDi mixing.
+                // Click below the last run: place cursor at the logical end of
+                // the line, regardless of paragraph direction
+                // or BiDi mixing.
                 let new_cursor =
                     Cursor::new_with_affinity(run.line_i, run.text.len(), Affinity::Before);
                 new_cursor_opt = Some(new_cursor);
@@ -1422,7 +1445,8 @@ impl Buffer {
                 }
 
                 if let Some(cursor_x) = cursor_x_opt {
-                    layout_cursor.glyph = cursor_x as usize; //TODO: glyph x position
+                    layout_cursor.glyph = cursor_x as usize; //TODO: glyph x
+                                                             // position
                 }
 
                 (cursor, cursor_x_opt) = self.cursor_motion(
@@ -1451,7 +1475,8 @@ impl Buffer {
                 }
 
                 if let Some(cursor_x) = cursor_x_opt {
-                    layout_cursor.glyph = cursor_x as usize; //TODO: glyph x position
+                    layout_cursor.glyph = cursor_x as usize; //TODO: glyph x
+                                                             // position
                 }
 
                 (cursor, cursor_x_opt) = self.cursor_motion(
@@ -1753,7 +1778,8 @@ impl BorrowedWithFontSystem<'_, Buffer> {
         self.inner.set_tab_width(tab_width);
     }
 
-    /// Set monospace width monospace glyphs should be resized to match. `None` means don't resize.
+    /// Set monospace width monospace glyphs should be resized to match. `None`
+    /// means don't resize.
     pub fn set_monospace_width(&mut self, monospace_width: Option<f32>) {
         self.inner.set_monospace_width(monospace_width);
     }
@@ -1769,7 +1795,8 @@ impl BorrowedWithFontSystem<'_, Buffer> {
         self.inner.set_text(text, attrs, shaping, alignment);
     }
 
-    /// Set text of buffer, using an iterator of styled spans (pairs of text and attributes).
+    /// Set text of buffer, using an iterator of styled spans (pairs of text and
+    /// attributes).
     pub fn set_rich_text<'r, 's, I>(
         &mut self,
         spans: I,

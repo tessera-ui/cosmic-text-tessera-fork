@@ -5,8 +5,8 @@ pub struct Cursor {
     pub line: usize,
     /// First-byte-index of glyph at cursor (will insert behind this glyph)
     pub index: usize,
-    /// Whether to associate the cursor with the run before it or the run after it if placed at the
-    /// boundary between two runs
+    /// Whether to associate the cursor with the run before it or the run after
+    /// it if placed at the boundary between two runs
     pub affinity: Affinity,
 }
 
@@ -26,7 +26,8 @@ impl Cursor {
     }
 }
 
-/// Whether to associate cursors placed at a boundary between runs with the run before or after it.
+/// Whether to associate cursors placed at a boundary between runs with the run
+/// before or after it.
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Affinity {
     #[default]
@@ -87,9 +88,11 @@ impl LayoutCursor {
 pub enum Motion {
     /// Apply specific [`LayoutCursor`]
     LayoutCursor(LayoutCursor),
-    /// Move cursor to previous character ([`Self::Left`] in LTR, [`Self::Right`] in RTL)
+    /// Move cursor to previous character ([`Self::Left`] in LTR,
+    /// [`Self::Right`] in RTL)
     Previous,
-    /// Move cursor to next character ([`Self::Right`] in LTR, [`Self::Left`] in RTL)
+    /// Move cursor to next character ([`Self::Right`] in LTR, [`Self::Left`] in
+    /// RTL)
     Next,
     /// Move cursor left
     Left,
@@ -134,11 +137,12 @@ pub enum Motion {
 /// Scroll position in [`Buffer`]
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
 pub struct Scroll {
-    /// Index of [`BufferLine`] in [`Buffer::lines`]. This will be adjusted as needed if layout is
-    /// out of bounds
+    /// Index of [`BufferLine`] in [`Buffer::lines`]. This will be adjusted as
+    /// needed if layout is out of bounds
     pub line: usize,
-    /// Pixel offset from the start of the [`BufferLine`]. This will be adjusted as needed
-    /// if it is negative or exceeds the height of the [`BufferLine::layout`] lines.
+    /// Pixel offset from the start of the [`BufferLine`]. This will be adjusted
+    /// as needed if it is negative or exceeds the height of the
+    /// [`BufferLine::layout`] lines.
     pub vertical: f32,
     /// The horizontal position of scroll in fractional pixels
     pub horizontal: f32,

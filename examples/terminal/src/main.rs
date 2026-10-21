@@ -8,7 +8,8 @@ use cosmic_text::{Attrs, Buffer, Color, FontSystem, Metrics, Shaping, SwashCache
 use std::fmt::Write;
 
 fn main() {
-    // A FontSystem provides access to detected system fonts, create one per application
+    // A FontSystem provides access to detected system fonts, create one per
+    // application
     let mut font_system = FontSystem::new();
 
     // A SwashCache stores rasterized glyphs, create one per application
@@ -19,7 +20,8 @@ fn main() {
     const LINE_HEIGHT: f32 = FONT_SIZE * 1.2;
     let metrics = Metrics::new(FONT_SIZE, LINE_HEIGHT);
 
-    // A Buffer provides shaping and layout for a UTF-8 string, create one per text widget
+    // A Buffer provides shaping and layout for a UTF-8 string, create one per
+    // text widget
     let mut buffer = Buffer::new(&mut font_system, metrics);
 
     let mut buffer = buffer.borrow_with(&mut font_system);
@@ -52,7 +54,8 @@ fn main() {
     buffer.draw(&mut swash_cache, TEXT_COLOR, |x, y, w, h, color| {
         let a = color.a();
         if a == 0 || x < 0 || x >= width as i32 || y < 0 || y >= height as i32 || w != 1 || h != 1 {
-            // Ignore alphas of 0, or invalid x, y coordinates, or unimplemented sizes
+            // Ignore alphas of 0, or invalid x, y coordinates, or unimplemented
+            // sizes
             return;
         }
 

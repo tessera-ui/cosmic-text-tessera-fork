@@ -7,25 +7,27 @@ use cosmic_text::{
 use tiny_skia::{Paint, Pixmap, Rect, Transform};
 
 /// The test configuration.
-/// The text in the test will be rendered as image using the one of the fonts found under the
-/// `fonts` directory in this repository.
-/// The image will then be compared to an image with the name `name` under the `tests/images`
-/// directory in this repository.
+/// The text in the test will be rendered as image using the one of the fonts
+/// found under the `fonts` directory in this repository.
+/// The image will then be compared to an image with the name `name` under the
+/// `tests/images` directory in this repository.
 /// If the images do not match the test will fail.
-/// NOTE: if an environment variable `GENERATE_IMAGES` is set, the test will create and save
-/// the images instead.
+/// NOTE: if an environment variable `GENERATE_IMAGES` is set, the test will
+/// create and save the images instead.
 #[derive(Debug)]
 pub struct DrawTestCfg {
     /// The name of the test.
-    /// Will be used for the image name under the `tests/images` directory in this repository.
+    /// Will be used for the image name under the `tests/images` directory in
+    /// this repository.
     name: String,
     /// The text to render to image
     text: String,
-    /// Optional rich text spans. When set, `set_rich_text` is used instead of `set_text`.
-    /// Each entry is `(text, attrs)` for one styled span.
+    /// Optional rich text spans. When set, `set_rich_text` is used instead of
+    /// `set_text`. Each entry is `(text, attrs)` for one styled span.
     rich_spans: Option<Vec<(String, AttrsOwned)>>,
     /// The name, details of the font to be used.
-    /// Expected to be one of the fonts found under the `fonts` directory in this repository.
+    /// Expected to be one of the fonts found under the `fonts` directory in
+    /// this repository.
     font: AttrsOwned,
 
     font_size: f32,
@@ -116,7 +118,8 @@ impl DrawTestCfg {
 
     pub fn validate_text_rendering(self) {
         let repo_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        // Create a db with just the fonts in our fonts dir to make sure we only test those
+        // Create a db with just the fonts in our fonts dir to make sure we only
+        // test those
         let fonts_path = PathBuf::from(&repo_dir).join("fonts");
         let mut font_db = Database::new();
         font_db.load_fonts_dir(fonts_path);

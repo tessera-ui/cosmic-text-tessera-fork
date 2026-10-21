@@ -2,17 +2,20 @@
 
 //! Persistent on-disk cache for the parsed system-font index.
 //!
-//! [`fontdb::Database::load_system_fonts`] walks every system font directory and
-//! `mmap`s + parses each font file to populate per-face metadata. The result lives only
-//! in memory and is rebuilt from scratch on every process start.
+//! [`fontdb::Database::load_system_fonts`] walks every system font directory
+//! and `mmap`s + parses each font file to populate per-face metadata. The
+//! result lives only in memory and is rebuilt from scratch on every process
+//! start.
 //!
-//! This module persists the small, parsed [`fontdb::FaceInfo`] set to disk and reloads it
-//! via [`fontdb::Database::push_face_info`] instead of re-parsing every font file. It is a
-//! pure-Rust, dependency-free reimplementation of what fontconfig's `fc-cache` does.
+//! This module persists the small, parsed [`fontdb::FaceInfo`] set to disk and
+//! reloads it via [`fontdb::Database::push_face_info`] instead of re-parsing
+//! every font file. It is a pure-Rust, dependency-free reimplementation of what
+//! fontconfig's `fc-cache` does.
 //!
-//! The cache is keyed on a cheap fingerprint of the font directories and files that were
-//! scanned (per-directory and per-file modification time, plus file size). On any mismatch
-//! the normal scan runs and the cache is rewritten atomically.
+//! The cache is keyed on a cheap fingerprint of the font directories and files
+//! that were scanned (per-directory and per-file modification time, plus file
+//! size). On any mismatch the normal scan runs and the cache is rewritten
+//! atomically.
 
 use crate::HashMap;
 use alloc::string::String;
@@ -22,20 +25,21 @@ use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-/// Magic bytes identifying a cosmic-text font cache file (`C`osmic `T`ext `F`ont `C`ache).
+/// Magic bytes identifying a cosmic-text font cache file (`C`osmic `T`ext
+/// `F`ont `C`ache).
 const MAGIC: [u8; 4] = *b"CTFC";
 
-/// Cache format version. Bump whenever the on-disk layout changes so that stale caches
-/// written by an older version are rejected instead of misparsed.
+/// Cache format version. Bump whenever the on-disk layout changes so that stale
+/// caches written by an older version are rejected instead of misparsed.
 const VERSION: u32 = 1;
 
-/// Loads the system fonts into `db`, using the on-disk cache at `cache_path` when it is
-/// present and still valid.
+/// Loads the system fonts into `db`, using the on-disk cache at `cache_path`
+/// when it is present and still valid.
 ///
-/// On a cache hit no font file is parsed: the stored [`FaceInfo`] entries are inserted
-/// directly with [`Database::push_face_info`]. On a miss (or an invalidated cache) the
-/// normal [`Database::load_system_fonts`] scan runs and its result is written back to the
-/// cache for the next start.
+/// On a cache hit no font file is parsed: the stored [`FaceInfo`] entries are
+/// inserted directly with [`Database::push_face_info`]. On a miss (or an
+/// invalidated cache) the normal [`Database::load_system_fonts`] scan runs and
+/// its result is written back to the cache for the next start.
 pub(crate) fn load_system_fonts_cached(db: &mut Database, cache_path: &Path) {
     match try_load(cache_path) {
         Some(faces) => {
@@ -60,9 +64,9 @@ pub(crate) fn load_system_fonts_cached(db: &mut Database, cache_path: &Path) {
     }
 }
 
-/// Returns the default cache file path (`<cache-dir>/cosmic-text/fonts.cache`), following
-/// the platform's conventional cache directory. Returns `None` if no cache directory can
-/// be determined from the environment.
+/// Returns the default cache file path (`<cache-dir>/cosmic-text/fonts.cache`),
+/// following the platform's conventional cache directory. Returns `None` if no
+/// cache directory can be determined from the environment.
 pub(crate) fn default_cache_path() -> Option<PathBuf> {
     let mut dir = cache_dir()?;
     dir.push("cosmic-text");
@@ -103,9 +107,9 @@ fn cache_dir() -> Option<PathBuf> {
 
 //TODO: Redox?!
 
-/// Reads `cache_path` and, if it is well-formed and its fingerprint still matches the
-/// filesystem, returns the cached set of faces. Returns `None` on any error, version
-/// mismatch, or fingerprint mismatch.
+/// Reads `cache_path` and, if it is well-formed and its fingerprint still
+/// matches the filesystem, returns the cached set of faces. Returns `None` on
+/// any error, version mismatch, or fingerprint mismatch.
 fn try_load(cache_path: &Path) -> Option<Vec<FaceInfo>> {
     let bytes = std::fs::read(cache_path).ok()?;
     let mut r = Reader::new(&bytes);
@@ -254,7 +258,8 @@ fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
     }
 
     let mut tmp = path.as_os_str().to_os_string();
-    // A per-process suffix keeps concurrent writers from writing to eachother's temp file
+    // A per-process suffix keeps concurrent writers from writing to eachother's
+    // temp file
     tmp.push(format!(".{}.tmp", std::process::id()));
     let tmp = PathBuf::from(tmp);
 
@@ -268,7 +273,8 @@ fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
     }
 }
 
-/// Returns the modification time of a directory as `(secs, nanos)` since the Unix epoch.
+/// Returns the modification time of a directory as `(secs, nanos)` since the
+/// Unix epoch.
 fn dir_mtime(path: &Path) -> Option<(u64, u32)> {
     let metadata = std::fs::metadata(path).ok()?;
     if !metadata.is_dir() {
@@ -277,7 +283,8 @@ fn dir_mtime(path: &Path) -> Option<(u64, u32)> {
     mtime_parts(metadata.modified().ok()?)
 }
 
-/// Returns `((secs, nanos), len)` for a regular file, or `None` if it is missing or not a file.
+/// Returns `((secs, nanos), len)` for a regular file, or `None` if it is
+/// missing or not a file.
 fn file_fingerprint(path: &Path) -> Option<((u64, u32), u64)> {
     let metadata = std::fs::metadata(path).ok()?;
     if !metadata.is_file() {
@@ -373,8 +380,9 @@ impl Writer {
     }
 }
 
-/// Bounds-checked little-endian byte reader. Every accessor returns `None` on truncation
-/// or malformed data so a corrupt cache is rejected rather than panicking.
+/// Bounds-checked little-endian byte reader. Every accessor returns `None` on
+/// truncation or malformed data so a corrupt cache is rejected rather than
+/// panicking.
 struct Reader<'a> {
     data: &'a [u8],
     pos: usize,

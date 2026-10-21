@@ -71,7 +71,8 @@ fn editor_line_endings_preserved() {
     }
 }
 
-// Tests that inserting into an empty editor correctly sets the editor as modified.
+// Tests that inserting into an empty editor correctly sets the editor as
+// modified.
 #[test]
 fn insert_in_empty_editor_sets_changed() {
     let mut editor = editor();
@@ -95,7 +96,8 @@ fn insert_and_undo_in_unsaved_editor_is_unchanged() {
     editor.finish_change();
     assert!(editor.changed());
 
-    // Undoing the above change should set the editor as unchanged even if the save state is unset
+    // Undoing the above change should set the editor as unchanged even if the
+    // save state is unset
     editor.start_change();
     editor.undo();
     editor.finish_change();
@@ -120,8 +122,8 @@ fn undo_to_save_point_sets_editor_to_unchanged() {
         "Editor should be set to unchanged after setting a save point"
     );
 
-    // A new insert should set the editor as modified and the pivot should still be on the first
-    // change from earlier
+    // A new insert should set the editor as modified and the pivot should still
+    // be on the first change from earlier
     editor.start_change();
     editor.insert_at(cursor, "mascot", None);
     editor.finish_change();

@@ -34,25 +34,28 @@ pub struct LayoutGlyph {
     pub y: f32,
     /// Width of hitbox
     pub w: f32,
-    /// Unicode `BiDi` embedding level, character is left-to-right if `level` is divisible by 2
+    /// Unicode `BiDi` embedding level, character is left-to-right if `level` is
+    /// divisible by 2
     pub level: unicode_bidi::Level,
     /// X offset in line
     ///
-    /// If you are dealing with physical coordinates, use [`Self::physical`] to obtain a
-    /// [`PhysicalGlyph`] for rendering.
+    /// If you are dealing with physical coordinates, use [`Self::physical`] to
+    /// obtain a [`PhysicalGlyph`] for rendering.
     ///
-    /// This offset is useful when you are dealing with logical units and you do not care or
-    /// cannot guarantee pixel grid alignment. For instance, when you want to use the glyphs
-    /// for vectorial text, apply linear transformations to the layout, etc.
+    /// This offset is useful when you are dealing with logical units and you do
+    /// not care or cannot guarantee pixel grid alignment. For instance,
+    /// when you want to use the glyphs for vectorial text, apply linear
+    /// transformations to the layout, etc.
     pub x_offset: f32,
     /// Y offset in line
     ///
-    /// If you are dealing with physical coordinates, use [`Self::physical`] to obtain a
-    /// [`PhysicalGlyph`] for rendering.
+    /// If you are dealing with physical coordinates, use [`Self::physical`] to
+    /// obtain a [`PhysicalGlyph`] for rendering.
     ///
-    /// This offset is useful when you are dealing with logical units and you do not care or
-    /// cannot guarantee pixel grid alignment. For instance, when you want to use the glyphs
-    /// for vectorial text, apply linear transformations to the layout, etc.
+    /// This offset is useful when you are dealing with logical units and you do
+    /// not care or cannot guarantee pixel grid alignment. For instance,
+    /// when you want to use the glyphs for vectorial text, apply linear
+    /// transformations to the layout, etc.
     pub y_offset: f32,
     /// Optional color override
     pub color_opt: Option<Color>,
@@ -132,7 +135,8 @@ pub enum Wrap {
     Glyph,
     /// Wraps at the word level
     Word,
-    /// Wraps at the word level, or fallback to glyph level if a word can't fit on a line by itself
+    /// Wraps at the word level, or fallback to glyph level if a word can't fit
+    /// on a line by itself
     WordOrGlyph,
 }
 
@@ -174,21 +178,26 @@ pub enum Ellipsize {
     /// No Ellipsizing
     #[default]
     None,
-    /// Ellipsizes the start of the last visual line that fits within the `EllipsizeHeightLimit`
+    /// Ellipsizes the start of the last visual line that fits within the
+    /// `EllipsizeHeightLimit`
     Start(EllipsizeHeightLimit),
-    /// Ellipsizes the middle of the last visual line that fits within the `EllipsizeHeightLimit`.
+    /// Ellipsizes the middle of the last visual line that fits within the
+    /// `EllipsizeHeightLimit`.
     Middle(EllipsizeHeightLimit),
-    /// Ellipsizes the end of the last visual line that fits within the `EllipsizeHeightLimit`.
+    /// Ellipsizes the end of the last visual line that fits within the
+    /// `EllipsizeHeightLimit`.
     End(EllipsizeHeightLimit),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum EllipsizeHeightLimit {
-    /// Number of lines to show before ellipsizing the rest. Only works if `Wrap` is NOT set to
-    /// `Wrap::None`. Otherwise, it will be ignored and the behavior will be the same as `Lines(1)`
+    /// Number of lines to show before ellipsizing the rest. Only works if
+    /// `Wrap` is NOT set to `Wrap::None`. Otherwise, it will be ignored and
+    /// the behavior will be the same as `Lines(1)`
     Lines(usize),
-    /// Ellipsizes the last line that fits within the given height limit. If `Wrap` is set to
-    /// `Wrap::None`, the behavior will be the same as `Lines(1)`
+    /// Ellipsizes the last line that fits within the given height limit. If
+    /// `Wrap` is set to `Wrap::None`, the behavior will be the same as
+    /// `Lines(1)`
     Height(f32),
 }
 
@@ -205,12 +214,14 @@ pub enum Hinting {
 
     /// Metrics hinting.
     ///
-    /// Glyphs will be snapped to integral coordinates in the X-axis during layout.
-    /// This can improve readability for smaller text and/or low-DPI screens.
+    /// Glyphs will be snapped to integral coordinates in the X-axis during
+    /// layout. This can improve readability for smaller text and/or low-DPI
+    /// screens.
     ///
-    /// However, in order to get the right effect, you must use physical coordinates
-    /// during layout and avoid further scaling when rendering. Otherwise, the rounding
-    /// errors can accumulate and glyph distances may look erratic.
+    /// However, in order to get the right effect, you must use physical
+    /// coordinates during layout and avoid further scaling when rendering.
+    /// Otherwise, the rounding errors can accumulate and glyph distances
+    /// may look erratic.
     ///
     /// In other words, metrics hinting makes layouting dependent of the target
     /// resolution.

@@ -1,7 +1,7 @@
 use cosmic_text_tessera_fork::{Attrs, Buffer, FontSystem, Metrics, Shaping, Wrap};
 
-// Tests the ability to fallback to glyph wrapping when a word can't fit on a line by itself.
-// No line should ever overflow the buffer size.
+// Tests the ability to fallback to glyph wrapping when a word can't fit on a
+// line by itself. No line should ever overflow the buffer size.
 #[test]
 fn wrap_word_fallback() {
     let mut font_system =

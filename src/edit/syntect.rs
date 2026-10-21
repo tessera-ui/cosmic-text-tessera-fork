@@ -31,7 +31,8 @@ impl SyntaxSystem {
     }
 }
 
-/// A wrapper of [`Editor`] with syntax highlighting provided by [`SyntaxSystem`]
+/// A wrapper of [`Editor`] with syntax highlighting provided by
+/// [`SyntaxSystem`]
 #[derive(Debug)]
 pub struct SyntaxEditor<'syntax_system, 'buffer> {
     editor: Editor<'buffer>,
@@ -43,7 +44,8 @@ pub struct SyntaxEditor<'syntax_system, 'buffer> {
 }
 
 impl<'syntax_system, 'buffer> SyntaxEditor<'syntax_system, 'buffer> {
-    /// Create a new [`SyntaxEditor`] with the provided [`Buffer`], [`SyntaxSystem`], and theme name.
+    /// Create a new [`SyntaxEditor`] with the provided [`Buffer`],
+    /// [`SyntaxSystem`], and theme name.
     ///
     /// A good default theme name is "base16-eighties.dark".
     ///
@@ -68,7 +70,8 @@ impl<'syntax_system, 'buffer> SyntaxEditor<'syntax_system, 'buffer> {
         })
     }
 
-    /// Modifies the theme of the [`SyntaxEditor`], returning false if the theme is missing
+    /// Modifies the theme of the [`SyntaxEditor`], returning false if the theme
+    /// is missing
     pub fn update_theme(&mut self, theme_name: &str) -> bool {
         if let Some(theme) = self.syntax_system.theme_set.themes.get(theme_name) {
             if self.theme != theme {
@@ -314,7 +317,8 @@ impl<'buffer> Edit<'buffer> for SyntaxEditor<'_, 'buffer> {
             let mut total_height = 0.0;
             let mut highlighted = 0;
             for line_i in 0..buffer.lines.len() {
-                // Break out if we have reached the end of scroll and are past the cursor
+                // Break out if we have reached the end of scroll and are past
+                // the cursor
                 if total_height > scroll_end && line_i > cursor.line {
                     break;
                 }
@@ -323,7 +327,8 @@ impl<'buffer> Edit<'buffer> for SyntaxEditor<'_, 'buffer> {
                 if line.metadata().is_some() && line_i < self.syntax_cache.len() {
                     //TODO: duplicated code!
                     if line_i >= scroll.line && total_height < scroll_end {
-                        // Perform shaping and layout of this line in order to count if we have reached scroll
+                        // Perform shaping and layout of this line in order to
+                        // count if we have reached scroll
                         match buffer.line_layout(font_system, line_i) {
                             Some(layout_lines) => {
                                 for layout_line in layout_lines.iter() {
@@ -359,7 +364,8 @@ impl<'buffer> Edit<'buffer> for SyntaxEditor<'_, 'buffer> {
 
                 let attrs = line.attrs_list().defaults();
                 let mut attrs_list = AttrsList::new(&attrs);
-                let original_attrs = attrs.clone(); // Store a clone for comparison
+                let original_attrs = attrs.clone(); // Store a clone for
+                                                    // comparison
                 for (style, _, range) in ranges {
                     let span_attrs = attrs
                         .clone() // Clone attrs for modification
@@ -390,10 +396,12 @@ impl<'buffer> Edit<'buffer> for SyntaxEditor<'_, 'buffer> {
                     }
                 }
 
-                // Update line attributes. This operation only resets if the line changes
+                // Update line attributes. This operation only resets if the
+                // line changes
                 line.set_attrs_list(attrs_list);
 
-                // Perform shaping and layout of this line in order to count if we have reached scroll
+                // Perform shaping and layout of this line in order to count if
+                // we have reached scroll
                 if line_i >= scroll.line && total_height < scroll_end {
                     match buffer.line_layout(font_system, line_i) {
                         Some(layout_lines) => {

@@ -26,11 +26,14 @@ mod platform;
 #[path = "windows.rs"]
 mod platform;
 
-/// The `Fallback` trait allows for configurable font fallback lists to be set during construction of the [`FontSystem`].
+/// The `Fallback` trait allows for configurable font fallback lists to be set
+/// during construction of the [`FontSystem`].
 ///
-/// A custom fallback list can be added via the [`FontSystem::new_with_locale_and_db_and_fallback`] constructor.
+/// A custom fallback list can be added via the
+/// [`FontSystem::new_with_locale_and_db_and_fallback`] constructor.
 ///
-/// A default implementation is provided by the [`PlatformFallback`] struct, which encapsulates the target platform's pre-configured fallback lists.
+/// A default implementation is provided by the [`PlatformFallback`] struct,
+/// which encapsulates the target platform's pre-configured fallback lists.
 ///
 /// ```rust
 /// # use unicode_script::Script;
@@ -57,7 +60,7 @@ mod platform;
 ///             Script::Canadian_Aboriginal => &["Gadugi"],
 ///             // ...
 ///             _ => &[],
-///        }
+///         }
 ///     }
 /// }
 ///
@@ -171,8 +174,8 @@ use log::debug as missing_warn;
 use log::warn as missing_warn;
 
 // Match on lowest font_weight_diff, then script_non_matches, then font_weight
-// Default font gets None for both `weight_offset` and `script_non_matches`, and thus, it is
-// always the first to be popped from the set.
+// Default font gets None for both `weight_offset` and `script_non_matches`, and
+// thus, it is always the first to be popped from the set.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MonospaceFallbackInfo {
     font_weight_diff: Option<u16>,
@@ -351,8 +354,9 @@ impl<'a> FontFallbackIter<'a> {
                     if let Some(mut fallback_info) = mk_mono_fallback_info!(m_key) {
                         fallback_info.font_weight_diff = None;
 
-                        // Return early if default Monospace font supports all word codepoints.
-                        // Otherewise, add to fallbacks set
+                        // Return early if default Monospace font supports all
+                        // word codepoints. Otherewise,
+                        // add to fallbacks set
                         if fallback_info.codepoint_non_matches == Some(0) {
                             if let Some(font) =
                                 self.font_system.get_font(m_key.id, self.ideal_weight)

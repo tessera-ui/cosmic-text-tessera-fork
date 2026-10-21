@@ -16,7 +16,8 @@ pub use harfrust;
 
 use super::fallback::{Fallback, Fallbacks, MonospaceFallbackInfo, PlatformFallback};
 
-// The fields are used in the derived Ord implementation for sorting fallback candidates.
+// The fields are used in the derived Ord implementation for sorting fallback
+// candidates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FontMatchKey {
     pub(crate) not_emoji: bool,
@@ -181,13 +182,15 @@ impl fmt::Debug for FontSystem {
 
 impl FontSystem {
     const FONT_MATCHES_CACHE_SIZE_LIMIT: usize = 256;
-    /// Create a new [`FontSystem`], that allows access to any installed system fonts
+    /// Create a new [`FontSystem`], that allows access to any installed system
+    /// fonts
     ///
     /// # Timing
     ///
-    /// This function takes some time to run. On the release build, it can take up to a second,
-    /// while debug builds can take up to ten times longer. For this reason, it should only be
-    /// called once, and the resulting [`FontSystem`] should be shared.
+    /// This function takes some time to run. On the release build, it can take
+    /// up to a second, while debug builds can take up to ten times longer.
+    /// For this reason, it should only be called once, and the resulting
+    /// [`FontSystem`] should be shared.
     pub fn new() -> Self {
         Self::new_with_fonts(core::iter::empty())
     }
@@ -199,33 +202,36 @@ impl FontSystem {
         Self::finish_with_db(db)
     }
 
-    /// Create a new [`FontSystem`] backed by a persistent on-disk system-font index cache
-    /// at the platform's conventional cache location
+    /// Create a new [`FontSystem`] backed by a persistent on-disk system-font
+    /// index cache at the platform's conventional cache location
     /// (e.g. `$XDG_CACHE_HOME/cosmic-text/fonts.cache`).
     ///
-    /// Falls back to a normal, uncached scan if no cache directory can be determined.
+    /// Falls back to a normal, uncached scan if no cache directory can be
+    /// determined.
     #[cfg(all(feature = "std", not(target_arch = "wasm32")))]
     pub fn new_cached() -> Self {
         Self::new_with_fonts_and_cache(core::iter::empty())
     }
 
-    /// Returns the default system-font cache file path used by [`FontSystem::new_cached`]
+    /// Returns the default system-font cache file path used by
+    /// [`FontSystem::new_cached`]
     /// and [`FontSystem::new_with_fonts_and_cache`]
-    /// (`<cache-dir>/cosmic-text/fonts.cache`, following the platform's conventional cache
-    /// directory).
+    /// (`<cache-dir>/cosmic-text/fonts.cache`, following the platform's
+    /// conventional cache directory).
     ///
-    /// Returns `None` if no cache directory can be determined from the environment.
+    /// Returns `None` if no cache directory can be determined from the
+    /// environment.
     #[cfg(all(feature = "std", not(target_arch = "wasm32")))]
     pub fn default_cache_path() -> Option<std::path::PathBuf> {
         super::cache::default_cache_path()
     }
 
-    /// Like [`FontSystem::new_with_fonts`], but reads from and writes to a persistent
-    /// system-font index cache at the default platform cache location (see
-    /// [`FontSystem::new_cached`]).
+    /// Like [`FontSystem::new_with_fonts`], but reads from and writes to a
+    /// persistent system-font index cache at the default platform cache
+    /// location (see [`FontSystem::new_cached`]).
     ///
-    /// The cache path is resolved automatically; if no cache directory can be determined
-    /// this falls back to a normal, uncached scan.
+    /// The cache path is resolved automatically; if no cache directory can be
+    /// determined this falls back to a normal, uncached scan.
     /// The user-provided `fonts` are always loaded fresh and
     /// are never persisted to the cache
     ///
@@ -236,9 +242,9 @@ impl FontSystem {
         Self::new_with_fonts_and_cache_inner(fonts, Self::default_cache_path())
     }
 
-    /// Like [`FontSystem::new_with_fonts_and_cache`], but uses the persistent system-font
-    /// index cache at the explicitly provided `cache_path` rather than the default
-    /// location.
+    /// Like [`FontSystem::new_with_fonts_and_cache`], but uses the persistent
+    /// system-font index cache at the explicitly provided `cache_path`
+    /// rather than the default location.
     #[cfg(all(feature = "std", not(target_arch = "wasm32")))]
     pub fn new_with_fonts_and_cache_path(
         fonts: impl IntoIterator<Item = fontdb::Source>,
@@ -273,8 +279,8 @@ impl FontSystem {
         Self::finish_with_db(db)
     }
 
-    /// Apply the default font families and finish constructing the [`FontSystem`] from a
-    /// loaded font database.
+    /// Apply the default font families and finish constructing the
+    /// [`FontSystem`] from a loaded font database.
     fn finish_with_db(mut db: fontdb::Database) -> Self {
         let locale = Self::get_locale();
         log::debug!("Locale: {locale}");
@@ -287,7 +293,8 @@ impl FontSystem {
         Self::new_with_locale_and_db_and_fallback(locale, db, PlatformFallback)
     }
 
-    /// Create a new [`FontSystem`] with a pre-specified locale, font database and font fallback list.
+    /// Create a new [`FontSystem`] with a pre-specified locale, font database
+    /// and font fallback list.
     pub fn new_with_locale_and_db_and_fallback(
         locale: String,
         db: fontdb::Database,
@@ -350,7 +357,8 @@ impl FontSystem {
         }
     }
 
-    /// Create a new [`FontSystem`] with a pre-specified locale and font database.
+    /// Create a new [`FontSystem`] with a pre-specified locale and font
+    /// database.
     pub fn new_with_locale_and_db(locale: String, db: fontdb::Database) -> Self {
         Self::new_with_locale_and_db_and_fallback(locale, db, PlatformFallback)
     }

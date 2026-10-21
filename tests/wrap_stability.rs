@@ -5,8 +5,9 @@ use cosmic_text::{
 
 // Test for https://github.com/pop-os/cosmic-text/issues/134
 //
-// Being able to get the same wrapping when feeding the measured width back into ShapeLine::layout
-// as the new width limit is very useful for certain UI layout use cases.
+// Being able to get the same wrapping when feeding the measured width back into
+// ShapeLine::layout as the new width limit is very useful for certain UI layout
+// use cases.
 #[test]
 fn stable_wrap() {
     let font_size = 18.0;
