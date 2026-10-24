@@ -288,6 +288,23 @@ impl BufferLine {
         self.layout_opt.get()
     }
 
+    /// Change laid-out glyph colors without changing text positions or sizes.
+    ///
+    /// The callback visits glyphs in visual line order. It receives each
+    /// glyph's current optional color and returns its replacement.
+    pub fn map_layout_glyph_colors(
+        &mut self,
+        mut map: impl FnMut(Option<crate::Color>) -> Option<crate::Color>,
+    ) {
+        if let Some(lines) = self.layout_opt.get_mut() {
+            for line in lines {
+                for glyph in &mut line.glyphs {
+                    glyph.color_opt = map(glyph.color_opt);
+                }
+            }
+        }
+    }
+
     /// Get the visible layout runs for rendering and other tasks
     pub fn layout_runs(&self, height_opt: Option<f32>, line_height: f32) -> LayoutRunIter<'_> {
         LayoutRunIter::from_lines(core::slice::from_ref(self), height_opt, line_height, 0.0, 0)
